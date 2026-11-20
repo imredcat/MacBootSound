@@ -1,0 +1,218 @@
+<!-- Paste directly into Tistory Post Editor > HTML mode -->
+<div class="mbs-tistory-post" lang="en">
+  <style>
+    @scope (.mbs-tistory-post) {
+      :scope {
+        line-height: 1.8;
+        font-size: 16px;
+        color: inherit;
+      }
+
+      h2 {
+        font-size: 1.3em;
+        font-weight: 700;
+        margin: 2em 0 0.7em;
+      }
+
+      h3 {
+        font-size: 1.08em;
+        font-weight: 700;
+        margin: 1.4em 0 0.5em;
+      }
+
+      p {
+        margin: 0 0 1em;
+      }
+
+      ul, ol {
+        margin: 0.4em 0 1.2em;
+        padding-left: 1.4em;
+      }
+
+      li {
+        margin-bottom: 0.45em;
+      }
+
+      blockquote {
+        margin: 1.1em 0;
+        padding: 0.2em 0 0.2em 1em;
+        border-left: 3px solid rgba(128, 128, 128, 0.4);
+        opacity: 0.88;
+      }
+
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.88em;
+        padding: 0.15em 0.4em;
+        border-radius: 4px;
+        background: rgba(128, 128, 128, 0.14);
+      }
+
+      .mbs-code {
+        background: #16181d;
+        color: #e9edf5;
+        padding: 14px 16px;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-size: 0.88em;
+        line-height: 1.55;
+        margin: 0.8em 0 1.4em;
+        color-scheme: dark;
+      }
+
+      .mbs-code code {
+        background: transparent;
+        padding: 0;
+        color: inherit;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0.8em 0 1.4em;
+        font-size: 0.93em;
+      }
+
+      caption {
+        text-align: left;
+        font-weight: 600;
+        margin-bottom: 6px;
+        opacity: 0.8;
+      }
+
+      th, td {
+        text-align: left;
+        padding: 8px 10px;
+        border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+        vertical-align: top;
+      }
+
+      hr {
+        border: 0;
+        border-top: 1px solid rgba(128, 128, 128, 0.25);
+        margin: 2em 0 1.2em;
+      }
+
+      a {
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+      }
+
+      :where(a, .mbs-code[tabindex]):focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: 2px;
+      }
+    }
+  </style>
+
+  <p>
+    I built this small macOS utility because I wanted my Mac to play a custom song or sound effect on startup instead of just the default chime.
+    It does not sit in the menu bar or stay resident in memory—a <code>LaunchDaemon</code> runs once at boot, plays your audio, and exits immediately.
+  </p>
+
+  <p>
+    It is compiled as a Universal Binary supporting both Apple Silicon (<code>arm64</code>) and Intel (<code>x86_64</code>) Macs on macOS 13.0 or later.
+  </p>
+
+  <h2>What It Does</h2>
+  <ul>
+    <li><strong>Up to 5 sound files:</strong> Add or remove up to 5 audio tracks (<code>.mp3</code>, <code>.m4a</code>, <code>.wav</code>, <code>.aiff</code>, etc.) and preview any item directly from the list.</li>
+    <li><strong>Selected or random playback:</strong> Play a single chosen track on every boot, or switch to Random mode to pick one track from your list automatically each time.</li>
+    <li><strong>Lightweight boot execution:</strong> The helper binary (<code>MacBootSoundPlayer</code>) hands playback off to macOS's built-in <code>afplay</code> and exits as soon as playback finishes, keeping login overhead minimal.</li>
+    <li><strong>Startup chime switch sync:</strong> Reflects the macOS System Settings "Play sound on startup" state and lets you toggle it right inside the app.</li>
+    <li><strong>Korean &amp; English UI:</strong> Automatically defaults to Korean on Korean systems and English everywhere else, with a manual switcher at the bottom.</li>
+  </ul>
+
+  <h2>Installation</h2>
+  <ol>
+    <li>Open <code>MacBootSound.dmg</code> and drag <code>MacBootSound.app</code> into <code>Applications</code>.</li>
+    <li>Launch <code>MacBootSound</code> from your Applications folder.</li>
+  </ol>
+
+  <blockquote>
+    <p>
+      Since the app is locally ad-hoc signed rather than notarized with an Apple Developer ID, Gatekeeper may prompt on first launch on another Mac.
+      <strong>Right-click → Open</strong> the app once, or allow it under <strong>System Settings → Privacy &amp; Security → Open Anyway</strong>.
+    </p>
+  </blockquote>
+
+  <h2>How to Use</h2>
+  <ol>
+    <li>Click <strong>Add...</strong> at the top to add audio files (up to 5).</li>
+    <li>Choose <strong>Selected</strong> or <strong>Random</strong> under Playback, enable boot playback, and set the volume.</li>
+    <li>Click <strong>Register Boot Sound</strong> and approve Touch ID or your administrator password once.</li>
+    <li>Use <strong>Test Background Player</strong> to verify that the daemon helper plays once and exits cleanly.</li>
+  </ol>
+
+  <p>
+    Once registered, adding, removing, or switching sounds and adjusting the volume apply right away without prompting for a password again.
+    Added audio files are copied into <code>/Library/Application Support/MacBootSound/</code>, so deleting the original source files afterward will not break boot playback.
+  </p>
+
+  <h2>How FileVault Affects Playback Timing</h2>
+  <p>
+    The banner at the top of the window shows your Mac's current FileVault state, which determines when the sound plays:
+  </p>
+  <ul>
+    <li><strong>When FileVault is On:</strong> The initial password screen after powering on is the pre-boot disk unlock prompt before macOS boots. Once you enter your password, macOS boots and plays your sound. Because the default Apple startup chime can overlap in this setup, the app displays a reminder and a quick <strong>Turn Off</strong> button.</li>
+    <li><strong>When FileVault is Off:</strong> macOS boots straight to the login window and plays the sound before user login, without showing the overlap warning.</li>
+  </ul>
+
+  <p>
+    Apple's built-in startup chime runs in pre-OS firmware (iBoot), so under macOS SIP and Signed System Volume protections, no third-party app can replace that firmware-level chime before macOS itself boots.
+  </p>
+
+  <h2>Installed Paths &amp; Uninstalling</h2>
+  <table>
+    <caption>System locations used by MacBootSound</caption>
+    <thead>
+      <tr>
+        <th scope="col">Component</th>
+        <th scope="col">Path</th>
+        <th scope="col">Purpose</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>App Bundle</td>
+        <td><code>/Applications/MacBootSound.app</code></td>
+        <td>Sound list and daemon configuration UI</td>
+      </tr>
+      <tr>
+        <td>LaunchDaemon</td>
+        <td><code>/Library/LaunchDaemons/com.leejm.MacBootSound.plist</code></td>
+        <td>Runs once at startup (<code>RunAtLoad</code>)</td>
+      </tr>
+      <tr>
+        <td>Player Helper</td>
+        <td><code>/Library/PrivilegedHelperTools/com.leejm.MacBootSound.player</code></td>
+        <td>Lightweight <code>afplay</code>-based boot runner</td>
+      </tr>
+      <tr>
+        <td>Config &amp; Audio</td>
+        <td><code>/Library/Application Support/MacBootSound/</code></td>
+        <td><code>config.json</code> and copied audio files</td>
+      </tr>
+      <tr>
+        <td>Log File</td>
+        <td><code>/Library/Logs/MacBootSound.log</code></td>
+        <td>Boot playback status and error logs</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 id="mbs-en-log-cmd">Checking Logs &amp; Removing Everything</h3>
+  <p>
+    To uninstall cleanly, click <strong>Uninstall</strong> in the app to remove the LaunchDaemon, helper binary, and shared audio store, then delete <code>MacBootSound.app</code> from Applications.
+  </p>
+  <pre class="mbs-code" role="region" aria-labelledby="mbs-en-log-cmd" tabindex="0"><code># Inspect the boot sound log
+cat /Library/Logs/MacBootSound.log
+
+# Clear Gatekeeper quarantine flag if needed on another Mac
+xattr -cr /Applications/MacBootSound.app</code></pre>
+
+  <hr>
+  <p>
+    By RedCat · <a href="https://ioerror.tistory.com" target="_blank" rel="noopener noreferrer">https://ioerror.tistory.com</a>
+  </p>
+</div>
